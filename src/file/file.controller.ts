@@ -6,11 +6,11 @@ import {
   Get,
   Post,
   Query,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+// import { Express } from 'express';
 import multer = require('multer');
 
 import { FileService } from './file.service';
@@ -34,7 +34,7 @@ export class FileController {
 
   @Post('upload')
   @UseInterceptors(
-    FileInterceptor('file', {
+    FilesInterceptor('file', 9, {
       storage: multer.diskStorage({
         destination: function (req, file, cb) {
           cb(null, resolve(process.cwd(), 'public'));
@@ -59,16 +59,23 @@ export class FileController {
       },
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const goods = await this.fileService.create({
-      url: `/static/${file.filename}`,
-      name: file.originalname,
-      size: file.size,
+  async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
+    const list = [];
+    files.forEach((file) => {
+      list.push({
+        url: `/static/${file.filename}`,
+        name: file.originalname,
+        size: file.size,
+      });
     });
+
+    const goods = await this.fileService.create(list);
 
     return {
       statusCode: 200,
-      data: goods,
+      data: {
+        list: goods,
+      },
       message: '上传成功',
     };
   }

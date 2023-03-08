@@ -25,7 +25,7 @@ export class FileService {
     return { list, total };
   }
 
-  create(createFileDto: CreateFileDto) {
+  create(createFileDto: CreateFileDto[]) {
     return this.fileRepository.save(createFileDto);
   }
 }
